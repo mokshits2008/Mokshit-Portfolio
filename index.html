@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Mokshit-Portfolio</title>
+  <meta name="description" content="An interactive fluid dimensional reveal hero section inspired by Stranger Things.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800;900&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Space+Grotesk:wght@300;400;600;700&family=Special+Elite&display=swap"
+    rel="stylesheet">
+</head>
+
+<body>
+  <!-- Fixed Static Stranger Things Forest Background for Sections -->
+  <div id="static-forest-bg" class="static-forest-bg" aria-hidden="true">
+    <div class="static-forest-overlay"></div>
+  </div>
+
+  <!-- Ambient Atmospheric White Stranger Things Particles for Entire Website -->
+  <canvas id="spores-canvas"></canvas>
+
+  <!-- Top Stranger Things Navigation Header (Framing the Flying Figure) -->
+  <header id="site-header" class="site-header">
+    <nav class="nav-wings-bar" aria-label="Main Navigation">
+      <!-- Left Wing: HOME & ABOUT -->
+      <div class="nav-wing nav-wing-left">
+        <a href="#hero-container" class="nav-link" id="nav-item-home" aria-label="Home section">
+          <img src="assets/nav_home.png" alt="HOME" class="nav-img nav-img-home">
+        </a>
+        <a href="#about-section" class="nav-link" id="nav-item-about" aria-label="About section">
+          <img src="assets/nav_about.png" alt="ABOUT" class="nav-img nav-img-about">
+        </a>
+      </div>
+
+      <!-- Center Gap framing the center flying figure -->
+      <div class="nav-center-gap" aria-hidden="true"></div>
+
+      <!-- Right Wing: PROJECTS & ACHIEVEMENTS -->
+      <div class="nav-wing nav-wing-right">
+        <a href="#projects-section" class="nav-link" id="nav-item-projects" aria-label="Projects section">
+          <img src="assets/nav_projects.png" alt="PROJECTS" class="nav-img nav-img-projects">
+        </a>
+        <a href="#achievements-section" class="nav-link" id="nav-item-achievements" aria-label="Achievements section">
+          <img src="assets/nav_achievements.png" alt="ACHIEVEMENTS" class="nav-img nav-img-achievements">
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Section 1: Hero Section with WebGL Canvas -->
+  <div id="hero-container" class="hero-container">
+    <canvas id="gl-canvas"></canvas>
+
+    <!-- Subtle Stranger Things Mood Vignette & Scanlines Overlay -->
+    <div class="vignette-overlay"></div>
+    <div class="scanlines"></div>
+
+    <!-- Minimal Subtle Hint (Fades out once user moves cursor) -->
+    <div id="hint-tag" class="hint-tag">
+      <div class="hint-pulse"></div>
+      <span>Wipe cursor to tear through the veil</span>
+    </div>
+
+    <!-- Scroll Down Indicator -->
+    <a href="#about-section" id="scroll-down-btn" class="scroll-down-btn" aria-label="Scroll to dossier">
+      <span class="scroll-text">OPEN DOSSIER</span>
+      <div class="scroll-arrow">
+        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </div>
+    </a>
+  </div>
+
+  <!-- Section 2: About Me - 80s D&D Manual / Field Dossier & Sticked Poster -->
+  <section id="about-section" class="about-section">
+    <!-- Ambient moody backdrop glow -->
+    <div class="about-backdrop-glow"></div>
+
+    <div class="about-wrapper">
+      <!-- Vintage Parchment Manual Spread -->
+      <div class="manual-parchment-sheet">
+        <!-- Weathering & Age Stains Overlays -->
+        <div class="paper-texture-overlay"></div>
+        <div class="paper-stain stain-1"></div>
+        <div class="paper-stain stain-2"></div>
+        <div class="paper-crease"></div>
+
+        <!-- Sheet Header Bar -->
+        <header class="manual-header">
+          <div class="manual-meta-left">
+            <span class="manual-dept">HAWKINS MIDDLE SCHOOL A.V. CLUB</span>
+            <span class="manual-code">ARCHIVE // FILE: #1983-011</span>
+          </div>
+          <div class="manual-meta-right">
+            <span class="manual-campaign">CAMPAIGN: THE UPSIDE DOWN</span>
+            <span class="dossier-stamp">CONFIDENTIAL</span>
+          </div>
+        </header>
+
+        <!-- 65% / 35% Dossier Layout -->
+        <div class="dossier-grid">
+
+          <!-- LEFT COLUMN: 65% About Me Description & Stats -->
+          <div class="dossier-left-col">
+            <!-- Red 80s Name Title -->
+            <div class="name-header-group">
+              <span class="character-tag-label">CHARACTER DOSSIER:</span>
+              <h1 class="character-name" id="about-name">MOKSHIT S</h1>
+              <div class="character-subtitle">
+                <span class="class-badge">CLASS: THE PALADIN</span>
+                <span class="dot-separator">•</span>
+                <span class="role-desc">CREATIVE DEVELOPER &amp; TECHNOLOGIST</span>
+              </div>
+            </div>
+
+            <!-- D&D Spellbook / Lore Description -->
+            <div class="lore-section">
+              <p class="spell-narrative-lead">
+                <span class="spell-drop-colon">: This powerful spell</span>
+                begins with curiosity, fueled by a passion for coding, creative problem-solving, and exploring the
+                unknown realms of technology. Currently pursuing a B.Tech in Computer Science and Engineering at Jain
+                University, I’m on a quest to transform ideas into meaningful digital experiences.
+              </p>
+
+              <div class="lore-divider">
+                <span class="divider-line"></span>
+                <span class="divider-glyph">⚔ ⚄ ⚔</span>
+                <span class="divider-line"></span>
+              </div>
+
+              <div class="lore-body">
+                <p>
+                  My journey revolves around Python programming and the ever-evolving world of Artificial Intelligence.
+                  From crafting interactive interfaces to experimenting with futuristic technologies, I enjoy
+                  discovering how creativity and code can come together to build something extraordinary.
+                </p>
+                <p>
+                  Armed with curiosity, a growing arsenal of technical skills, and a determination to keep learning, I'm
+                  exploring the realms of software engineering, AI, and DevOps.
+                </p>
+              </div>
+
+              <!-- Retro Actions & Radio Signal Buttons -->
+              <div class="dossier-actions">
+                <button type="button" id="transmit-frequency-btn" class="retro-btn btn-primary"
+                  aria-label="Open Transmit Frequency Contact Dispatch">
+                  <span class="btn-bracket">[</span>
+                  <span class="btn-text">TRANSMIT FREQUENCY</span>
+                  <span class="btn-bracket">]</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN: 35% Sticked Poster Photo Card -->
+          <div class="dossier-right-col">
+            <div class="sticked-poster-wrapper">
+
+              <!-- Vintage Masking Tape Strips -->
+              <div class="tape-strip tape-top-left" aria-hidden="true"></div>
+              <div class="tape-strip tape-top-right" aria-hidden="true"></div>
+              <div class="tape-strip tape-bottom-right" aria-hidden="true"></div>
+
+              <!-- Poster Board Card -->
+              <div class="poster-card">
+                <!-- Outer Inked Framing -->
+                <div class="poster-inner-frame">
+
+                  <!-- Corner Hatching Accents -->
+                  <div class="corner-hatch hatch-tl"></div>
+                  <div class="corner-hatch hatch-tr"></div>
+                  <div class="corner-hatch hatch-bl"></div>
+                  <div class="corner-hatch hatch-br"></div>
+
+                  <!-- Photo Wrapper -->
+                  <div class="poster-photo-container">
+                    <img id="about-poster-img" src="assets/about_poster.jpg" alt="Character Portrait Dossier Poster"
+                      class="poster-photo">
+                    <div class="photo-halftone-grain"></div>
+                    <div class="photo-vignette"></div>
+                  </div>
+
+                  <!-- Poster Placard / Caption -->
+                  <div class="poster-placard">
+                    <div class="placard-top">
+                      <span class="fig-number">FIG 1.1:</span>
+                      <span class="fig-title">FREQUENCY 14.28 MHz</span>
+                    </div>
+                    <div class="placard-bottom">
+                      <span>SUBJECT: PARTY LEADER // HAWKINS, IN</span>
+                    </div>
+                  </div>
+
+                  <!-- Authentic Rulebook Footer Marking -->
+                  <div class="poster-sheet-footer">
+                    <span class="footer-dnd-mark">D&amp;D</span>
+                    <span class="footer-page-num">PAGE 11</span>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+
+  <!-- Section 3: Byers Living Room Alphabet Wall - Interactive Unmasking Section -->
+  <section id="projects-section" class="byers-transmission-section">
+    <!-- Atmospheric Ambient Lighting & Dark Moody Backdrop -->
+    <div class="byers-bg-vignette"></div>
+
+    <div class="byers-section-container">
+      <!-- Section Heading: PROJECTS -->
+      <div class="section-title-header">
+        <img src="assets/heading_projects.png" alt="PROJECTS" class="section-heading-img heading-img-projects">
+      </div>
+
+      <!-- Interactive Living Room Wall Stage (Exact 1024 / 564 Aspect Ratio) -->
+      <div class="byers-stage-wrapper">
+        <div id="byers-stage" class="byers-stage">
+          <!-- Layer 1: Base Wall Image (Lights OFF) -->
+          <img id="wall-lights-off" class="wall-stage-img wall-stage-off" src="assets/lights_off.jpg"
+            alt="Byers Wallpaper Lights Off">
+
+          <!-- Layer 2: Glowing Wall Image (Lights ON) with Dynamic Light Unmasking -->
+          <img id="wall-lights-on" class="wall-stage-img wall-stage-on" src="assets/lights_on.jpg"
+            alt="Byers Wallpaper Lights On">
+
+          <!-- Layer 3: Dynamic Glow Bloom Flare Container -->
+          <div id="glow-bloom-container" class="glow-bloom-container" aria-hidden="true"></div>
+
+          <!-- Layer 4: Pinned Alphabet Parchment Cards Layer -->
+          <div id="alphabet-letters-layer" class="alphabet-letters-layer">
+            <!-- 26 Pinned Parchments generated by JavaScript with exact coordinates -->
+          </div>
+
+          <!-- 80s CRT Scanline & Grain Texture for Vintage Atmosphere -->
+          <div class="stage-scanlines" aria-hidden="true"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: Achievements - Hawkins Lab CCTV Surveillance Monitor Wall -->
+  <section id="achievements-section" class="achievements-section">
+    <!-- Atmospheric Hawkins Lab Control Room Vignette & CRT Ambiance -->
+    <div class="ach-bg-vignette" aria-hidden="true"></div>
+    <div class="ach-ambient-glow" aria-hidden="true"></div>
+
+    <!-- Section Heading: ACHIEVEMENTS -->
+    <div class="section-title-header">
+      <img src="assets/heading_achievements.png" alt="ACHIEVEMENTS"
+        class="section-heading-img heading-img-achievements">
+    </div>
+
+    <!-- 3×4 CCTV Security Monitor Grid -->
+    <div class="cctv-wall-rack">
+      <div class="monitor-grid" id="monitor-grid">
+        <!-- 12 Hawkins Lab CCTV Monitors injected by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5: Stranger Things Footer (Minimalist Layout Matching Reference Screenshot) -->
+  <footer id="site-footer" class="site-footer">
+    <div class="footer-bg-vignette" aria-hidden="true"></div>
+
+    <div class="footer-container">
+      <!-- Redirect Buttons (Styled Exactly Like Launch Expedition) -->
+      <div class="footer-buttons-row">
+        <a href="https://github.com/mokshits2008" target="_blank" rel="noopener noreferrer"
+          class="retro-btn btn-primary" aria-label="GitHub Profile">
+          <span class="btn-bracket">[</span>
+          <span class="btn-text">GITHUB ↗</span>
+          <span class="btn-bracket">]</span>
+        </a>
+
+        <a href="https://www.linkedin.com/in/mokshit-s-4917a4416?utm_source=share_via&utm_content=profile&utm_medium=member_android"
+          target="_blank" rel="noopener noreferrer" class="retro-btn btn-primary" aria-label="LinkedIn Profile">
+          <span class="btn-bracket">[</span>
+          <span class="btn-text">LINKEDIN ↗</span>
+          <span class="btn-bracket">]</span>
+        </a>
+
+        <a href="https://instagram.com/mokshit_ntr?xtok=ajRjZGlrYjh1cHRp" target="_blank" rel="noopener noreferrer"
+          class="retro-btn btn-primary" aria-label="Instagram Profile">
+          <span class="btn-bracket">[</span>
+          <span class="btn-text">INSTAGRAM ↗</span>
+          <span class="btn-bracket">]</span>
+        </a>
+
+        <a href="mailto:mokshit056@gmail.com" id="footer-email-btn" class="retro-btn btn-primary"
+          aria-label="Send Direct Email" title="Send direct transmission to mokshit056@gmail.com">
+          <span class="btn-bracket">[</span>
+          <span class="btn-text">GMAIL ✉</span>
+          <span class="btn-bracket">]</span>
+        </a>
+      </div>
+
+      <!-- Horizontal Divider Line -->
+      <div class="footer-divider-line"></div>
+
+      <!-- Copyright & Built By (Order matching Screenshot) -->
+      <div class="footer-meta-bar">
+        <span class="meta-copyright">&copy; Mokshit 2026</span>
+        <span class="meta-built-by">Made by Mokshit</span>
+      </div>
+
+      <!-- Big MOKSHIT Stranger Things Glowing Title at the Bottom -->
+      <div class="footer-title-display">
+        <img src="assets/footer_mokshit.png" alt="MOKSHIT" class="footer-title-img">
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==========================================================================
+       GLOBAL OVERLAY MODALS (Direct Children of Body to Prevent Stacking Context Traps)
+       ========================================================================== -->
+
+  <!-- Modal 1: Contact Me / Transmission Dispatch Dossier Modal -->
+  <div id="contact-modal" class="contact-modal" aria-hidden="true">
+    <div class="contact-modal-backdrop" id="contact-modal-backdrop"></div>
+    <div class="contact-modal-dialog">
+      <!-- Vintage Tape Strips at Corners -->
+      <div class="tape-strip tape-top-left" aria-hidden="true"></div>
+      <div class="tape-strip tape-top-right" aria-hidden="true"></div>
+
+      <!-- Main Parchment Sheet Container -->
+      <div class="contact-parchment-sheet">
+        <!-- Weathering textures & stains -->
+        <div class="paper-texture-overlay" aria-hidden="true"></div>
+        <div class="paper-stain stain-1" aria-hidden="true"></div>
+
+        <!-- Top Header Bar -->
+        <div class="contact-header-bar">
+          <div class="contact-dept-info">
+            <span class="manual-dept">HAWKINS RADIO TELEMETRY</span>
+            <span class="manual-code">// REF: 14.28-TX</span>
+          </div>
+          <div class="contact-header-right">
+            <span class="dossier-stamp">CONFIDENTIAL</span>
+            <button type="button" class="contact-close-btn" id="contact-modal-close"
+              aria-label="Close transmission modal">✕</button>
+          </div>
+        </div>
+
+        <!-- Main Title Area -->
+        <div class="contact-title-area">
+          <span class="character-tag-label">TRANSMISSION FREQUENCY DISPATCH</span>
+          <h3 class="contact-heading">TRANSMIT TO MOKSHIT</h3>
+          <p class="contact-subheading">
+            ESTABLISH ENCRYPTED TWO-WAY RADIO LINK // DELIVER DISPATCH DIRECTLY TO MOKSHIT
+          </p>
+        </div>
+
+        <!-- Transmission Form -->
+        <form id="transmission-form" class="transmission-form">
+          <!-- Field: Sender Name -->
+          <div class="transmission-field-group">
+            <label for="sender-name" class="transmission-label">
+              <span class="label-code">01 //</span> CALLSIGN / SENDER NAME:
+            </label>
+            <input type="text" id="sender-name" name="name" class="transmission-input"
+              placeholder="e.g. Chief Hopper / Dustin Henderson" required autocomplete="name">
+          </div>
+
+          <!-- Field: Sender Email -->
+          <div class="transmission-field-group">
+            <label for="sender-email" class="transmission-label">
+              <span class="label-code">02 //</span> RETURN FREQUENCY / SENDER EMAIL:
+            </label>
+            <input type="email" id="sender-email" name="email" class="transmission-input"
+              placeholder="e.g. operative@hawkinslab.gov" required autocomplete="email">
+          </div>
+
+          <!-- Field: Message -->
+          <div class="transmission-field-group">
+            <label for="sender-message" class="transmission-label">
+              <span class="label-code">03 //</span> ENCRYPTED DISPATCH PAYLOAD / MESSAGE:
+            </label>
+            <textarea id="sender-message" name="message" class="transmission-textarea" rows="4"
+              placeholder="Enter transmission message payload... Transmitting directly to mokshit056@gmail.com"
+              required></textarea>
+          </div>
+
+          <!-- Live Status Telemetry Indicator -->
+          <div id="transmission-status-indicator" class="transmission-status-indicator" aria-live="polite">
+            <span class="status-pulse-dot" id="status-pulse-dot"></span>
+            <span id="transmission-status-text" class="transmission-status-text">SIGNAL READY // FREQUENCY 14.28 MHz
+              CLEAR</span>
+          </div>
+
+          <!-- Actions Row -->
+          <div class="transmission-actions-row">
+            <button type="submit" id="transmission-submit-btn" class="retro-btn btn-primary">
+              <span class="btn-bracket">[</span>
+              <span class="btn-text">TRANSMIT DISPATCH 📡</span>
+              <span class="btn-bracket">]</span>
+            </button>
+            <button type="button" id="transmission-abort-btn" class="retro-btn btn-secondary">
+              <span class="btn-bracket">[</span>
+              <span class="btn-text">ABORT ✕</span>
+              <span class="btn-bracket">]</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Expedition Dossier Modal for Project Cards -->
+  <div id="expedition-modal" class="expedition-modal" aria-hidden="true">
+    <div class="modal-backdrop" id="modal-backdrop"></div>
+    <div class="modal-card">
+      <button class="modal-close-btn" id="modal-close-btn" aria-label="Close dossier">✕</button>
+      <div class="modal-card-content">
+        <div class="modal-preview-col">
+          <div class="modal-img-frame">
+            <img id="modal-project-img" src="assets/Projects/cafe.jpg" alt="Expedition Preview">
+            <div class="modal-img-scanlines"></div>
+          </div>
+        </div>
+        <div class="modal-info-col">
+          <div class="modal-tag-pill" id="modal-project-tag">EXPEDITION #01</div>
+          <h3 class="modal-title" id="modal-project-title">HAWKINS CRT TERMINAL</h3>
+          <p class="modal-desc" id="modal-project-desc">
+            Interactive 1980s retro cybernetic terminal simulation featuring real-time CRT scanlines, audio frequency
+            spectrum analysis, and encrypted radio transmission decoders.
+          </p>
+          <div class="modal-tech-list" id="modal-tech-list">
+            <!-- Tech tags -->
+          </div>
+          <div class="modal-btn-row">
+            <a href="#" id="modal-demo-btn" target="_blank" rel="noopener noreferrer" class="retro-btn btn-primary">
+              <span class="btn-bracket">[</span>
+              <span class="btn-text">LAUNCH EXPEDITION ↗</span>
+              <span class="btn-bracket">]</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Hawkins CCTV Expanded Monitor Lightbox -->
+  <div id="cert-lightbox" class="cert-lightbox" aria-hidden="true">
+    <div class="cert-lightbox-backdrop" id="cert-lightbox-backdrop"></div>
+    <div class="cert-lightbox-body">
+      <!-- Exact Hawkins Lab CCTV Large Monitor Chassis -->
+      <div class="cctv-expanded-tv-box">
+        <!-- Screen Area Inside TV Frame -->
+        <div class="cctv-expanded-screen">
+          <!-- Top CCTV OSD HUD -->
+          <div class="cctv-osd-header">
+            <span class="cctv-osd-rec">● REC</span>
+            <span class="cctv-osd-title" id="cert-lb-location">HAWKINS NATIONAL LABORATORY</span>
+            <span class="cctv-osd-channel" id="cert-lb-channel">CH-01</span>
+          </div>
+
+          <!-- Certificate Preview -->
+          <img id="cert-lightbox-img" src="" alt="Certificate Feed" class="cctv-expanded-img">
+
+          <!-- CRT Glass Curvature, Scanlines & Overhead Tube Glare -->
+          <div class="cctv-crt-glare" aria-hidden="true"></div>
+          <div class="cctv-crt-scanlines" aria-hidden="true"></div>
+          <div class="cctv-crt-vignette" aria-hidden="true"></div>
+
+          <!-- Bottom Telemetry HUD -->
+          <div class="cctv-osd-footer">
+            <span class="cctv-osd-status">SECURITY STATUS: VERIFIED // ACCESS GRANTED</span>
+            <span class="cctv-osd-date" id="cert-lb-date">OCT 1983</span>
+          </div>
+        </div>
+
+        <!-- The Exact Screenshot TV Bezel Frame Overlay -->
+        <img src="assets/cctv_tv_frame.png" alt="Hawkins CCTV Monitor Frame" class="cctv-tv-bezel-img"
+          aria-hidden="true">
+      </div>
+
+      <button class="cert-lightbox-close" id="cert-lightbox-close" aria-label="Close monitor">✕</button>
+    </div>
+  </div>
+
+  <script src="images-data.js"></script>
+  <script src="main.js"></script>
+</body>
+
+</html>

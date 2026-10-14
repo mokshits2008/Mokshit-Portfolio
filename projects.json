@@ -1,0 +1,14 @@
+[
+  {
+    "letter": "A",
+    "tag": "EXPEDITION #01",
+    "title": "SmartCafe360",
+    "desc": "It is a Cafe Management system.",
+    "img": "assets/Projects/cafe.jpg",
+    "url": "https://github.com/mokshits2008/SmartCafe360",
+    "tech": [
+      "Python",
+      "MySQL"
+    ]
+  }
+]
