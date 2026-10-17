@@ -6,17 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Mokshit-Portfolio</title>
   <meta name="description" content="An interactive fluid dimensional reveal hero section inspired by Stranger Things.">
-  <!-- LCP & Critical Resource Preloads -->
-  <link rel="preload" as="image" href="assets/stranger_forest_bg.webp" type="image/webp" fetchpriority="high">
-  <link rel="preload" as="image" href="assets/Hawk_final.webp" type="image/webp" fetchpriority="high">
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800;900&family=EB+Garamond:ital,wght@0,400;1,400&family=Space+Grotesk:wght@400;600;700&family=Special+Elite&display=swap">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800;900&family=EB+Garamond:ital,wght@0,400;1,400&family=Space+Grotesk:wght@400;600;700&family=Special+Elite&display=swap" media="print" onload="this.media='all'">
-  <noscript>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800;900&family=EB+Garamond:ital,wght@0,400;1,400&family=Space+Grotesk:wght@400;600;700&family=Special+Elite&display=swap">
-  </noscript>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800;900&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Space+Grotesk:wght@300;400;600;700&family=Special+Elite&display=swap"
+    rel="stylesheet">
 </head>
 
 <body>
@@ -34,10 +29,10 @@
       <!-- Left Wing: HOME & ABOUT -->
       <div class="nav-wing nav-wing-left">
         <a href="#hero-container" class="nav-link" id="nav-item-home" aria-label="Home section">
-          <img src="assets/nav_home.webp" alt="HOME" class="nav-img nav-img-home" width="681" height="228">
+          <img src="assets/nav_home.png" alt="HOME" class="nav-img nav-img-home">
         </a>
         <a href="#about-section" class="nav-link" id="nav-item-about" aria-label="About section">
-          <img src="assets/nav_about.webp" alt="ABOUT" class="nav-img nav-img-about" width="846" height="231">
+          <img src="assets/nav_about.png" alt="ABOUT" class="nav-img nav-img-about">
         </a>
       </div>
 
@@ -47,10 +42,10 @@
       <!-- Right Wing: PROJECTS & ACHIEVEMENTS -->
       <div class="nav-wing nav-wing-right">
         <a href="#projects-section" class="nav-link" id="nav-item-projects" aria-label="Projects section">
-          <img src="assets/nav_projects.webp" alt="PROJECTS" class="nav-img nav-img-projects" width="860" height="206">
+          <img src="assets/nav_projects.png" alt="PROJECTS" class="nav-img nav-img-projects">
         </a>
         <a href="#achievements-section" class="nav-link" id="nav-item-achievements" aria-label="Achievements section">
-          <img src="assets/nav_achievements.webp" alt="ACHIEVEMENTS" class="nav-img nav-img-achievements" width="959" height="190">
+          <img src="assets/nav_achievements.png" alt="ACHIEVEMENTS" class="nav-img nav-img-achievements">
         </a>
       </div>
     </nav>
@@ -184,8 +179,8 @@
 
                   <!-- Photo Wrapper -->
                   <div class="poster-photo-container">
-                    <img id="about-poster-img" src="assets/about_poster.webp" alt="Character Portrait Dossier Poster"
-                      class="poster-photo" width="764" height="1024" loading="lazy">
+                    <img id="about-poster-img" src="assets/about_poster.jpg" alt="Character Portrait Dossier Poster"
+                      class="poster-photo">
                     <div class="photo-halftone-grain"></div>
                     <div class="photo-vignette"></div>
                   </div>
@@ -228,20 +223,19 @@
     <div class="byers-section-container">
       <!-- Section Heading: PROJECTS -->
       <div class="section-title-header">
-        <img src="assets/heading_projects.webp" alt="PROJECTS" class="section-heading-img heading-img-projects"
-          width="864" height="210" loading="lazy">
+        <img src="assets/heading_projects.png" alt="PROJECTS" class="section-heading-img heading-img-projects">
       </div>
 
       <!-- Interactive Living Room Wall Stage (Exact 1024 / 564 Aspect Ratio) -->
       <div class="byers-stage-wrapper">
         <div id="byers-stage" class="byers-stage">
           <!-- Layer 1: Base Wall Image (Lights OFF) -->
-          <img id="wall-lights-off" class="wall-stage-img wall-stage-off" src="assets/lights_off.webp"
-            alt="Byers Wallpaper Lights Off" width="1024" height="564" loading="lazy">
+          <img id="wall-lights-off" class="wall-stage-img wall-stage-off" src="assets/lights_off.jpg"
+            alt="Byers Wallpaper Lights Off">
 
           <!-- Layer 2: Glowing Wall Image (Lights ON) with Dynamic Light Unmasking -->
-          <img id="wall-lights-on" class="wall-stage-img wall-stage-on" src="assets/lights_on.webp"
-            alt="Byers Wallpaper Lights On" width="1024" height="564" loading="lazy">
+          <img id="wall-lights-on" class="wall-stage-img wall-stage-on" src="assets/lights_on.jpg"
+            alt="Byers Wallpaper Lights On">
 
           <!-- Layer 3: Dynamic Glow Bloom Flare Container -->
           <div id="glow-bloom-container" class="glow-bloom-container" aria-hidden="true"></div>
@@ -266,8 +260,8 @@
 
     <!-- Section Heading: ACHIEVEMENTS -->
     <div class="section-title-header">
-      <img src="assets/heading_achievements.webp" alt="ACHIEVEMENTS"
-        class="section-heading-img heading-img-achievements" width="963" height="194" loading="lazy">
+      <img src="assets/heading_achievements.png" alt="ACHIEVEMENTS"
+        class="section-heading-img heading-img-achievements">
     </div>
 
     <!-- 3×4 CCTV Security Monitor Grid -->
@@ -325,7 +319,7 @@
 
       <!-- Big MOKSHIT Stranger Things Glowing Title at the Bottom -->
       <div class="footer-title-display">
-        <img src="assets/footer_mokshit.webp" alt="MOKSHIT" class="footer-title-img" width="868" height="221" loading="lazy">
+        <img src="assets/footer_mokshit.png" alt="MOKSHIT" class="footer-title-img">
       </div>
     </div>
   </footer>
@@ -433,7 +427,7 @@
       <div class="modal-card-content">
         <div class="modal-preview-col">
           <div class="modal-img-frame">
-            <img id="modal-project-img" src="assets/Projects/cafe.webp" alt="Expedition Preview" width="180" height="180" loading="lazy">
+            <img id="modal-project-img" src="assets/Projects/cafe.jpg" alt="Expedition Preview">
             <div class="modal-img-scanlines"></div>
           </div>
         </div>
@@ -490,15 +484,16 @@
         </div>
 
         <!-- The Exact Screenshot TV Bezel Frame Overlay -->
-        <img src="assets/cctv_tv_frame.webp" alt="Hawkins CCTV Monitor Frame" class="cctv-tv-bezel-img"
-          width="978" height="920" aria-hidden="true" loading="lazy">
+        <img src="assets/cctv_tv_frame.png" alt="Hawkins CCTV Monitor Frame" class="cctv-tv-bezel-img"
+          aria-hidden="true">
       </div>
 
       <button class="cert-lightbox-close" id="cert-lightbox-close" aria-label="Close monitor">✕</button>
     </div>
   </div>
 
-  <script src="main.js" defer></script>
+  <script src="images-data.js"></script>
+  <script src="main.js"></script>
 </body>
 
 </html>

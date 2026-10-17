@@ -8,8 +8,8 @@
 
   // --- Configuration ---
   const CONFIG = {
-    baseImagePath: './assets/Hawk_final.webp',
-    revealImagePath: './assets/Upside_final.webp',
+    baseImagePath: './assets/Hawk_final.jpeg',
+    revealImagePath: './assets/Upside_final.jpeg',
     // Trail physics
     lerpSpeed: 0.28,             // Spring interpolation factor
     minSpeedThreshold: 8.0,      // Speed (px/sec) below which no reveal occurs
@@ -48,16 +48,15 @@
   const trailCanvas = document.createElement('canvas');
   const trailCtx = trailCanvas.getContext('2d');
 
-  // --- Particle Spores Background (Adaptive Mobile / Desktop) ---
+  // --- Particle Spores Background ---
   const sporesCtx = sporesCanvas.getContext('2d');
-  const isMobileDevice = window.innerWidth < 768 || ('ontouchstart' in window && window.innerWidth < 1024);
-  const SPORE_COUNT = isMobileDevice ? 64 : 120;
   let spores = [];
+  const SPORE_COUNT = 144;
 
   // --- State Variables ---
   let width = window.innerWidth;
   let height = window.innerHeight;
-  let dpr = isMobileDevice ? Math.min(window.devicePixelRatio || 1, 1.25) : Math.min(window.devicePixelRatio || 1, 1.75);
+  let dpr = Math.min(window.devicePixelRatio || 1, 2);
 
   let mouse = {
     x: width / 2,
@@ -353,35 +352,27 @@
       console.warn('Could not load reveal image directly', e);
     };
 
-    if (window.location.protocol.startsWith('http')) {
-      baseImg.crossOrigin = 'anonymous';
-      revealImg.crossOrigin = 'anonymous';
+    if (window.ASSETS && window.ASSETS.hawkins && window.ASSETS.upsidedown) {
+      baseImg.src = window.ASSETS.hawkins;
+      revealImg.src = window.ASSETS.upsidedown;
+    } else {
+      if (window.location.protocol.startsWith('http')) {
+        baseImg.crossOrigin = 'anonymous';
+        revealImg.crossOrigin = 'anonymous';
+      }
+      baseImg.src = CONFIG.baseImagePath;
+      revealImg.src = CONFIG.revealImagePath;
     }
-    baseImg.src = CONFIG.baseImagePath;
-    revealImg.src = CONFIG.revealImagePath;
+
+    const aboutPosterImg = document.getElementById('about-poster-img');
+    if (aboutPosterImg && window.ASSETS && window.ASSETS.about) {
+      aboutPosterImg.src = window.ASSETS.about;
+    }
   }
 
   function checkReady() {
     resize();
   }
-
-  // --- Pre-rendered High-Performance Glowing Spore Sprite ---
-  // Replaces expensive software canvas shadowBlur with hardware-accelerated GPU blitting
-  const sporeSprite = document.createElement('canvas');
-  const sporeSpriteSize = 32;
-  sporeSprite.width = sporeSpriteSize;
-  sporeSprite.height = sporeSpriteSize;
-  const spriteCtx = sporeSprite.getContext('2d');
-  const sporeGrad = spriteCtx.createRadialGradient(
-    sporeSpriteSize / 2, sporeSpriteSize / 2, 0,
-    sporeSpriteSize / 2, sporeSpriteSize / 2, sporeSpriteSize / 2
-  );
-  sporeGrad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-  sporeGrad.addColorStop(0.22, 'rgba(255, 255, 255, 0.9)');
-  sporeGrad.addColorStop(0.55, 'rgba(255, 255, 255, 0.35)');
-  sporeGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-  spriteCtx.fillStyle = sporeGrad;
-  spriteCtx.fillRect(0, 0, sporeSpriteSize, sporeSpriteSize);
 
   // --- Atmospheric Spores Setup (Stranger Things White Particles) ---
   function initSpores() {
@@ -414,26 +405,21 @@
       if (s.y > height) s.y = 0;
 
       const alpha = s.opacity * (0.7 + 0.3 * Math.sin(time * s.flickerSpeed + s.flickerOffset));
-      sporesCtx.globalAlpha = Math.max(0, Math.min(1, alpha));
-      const drawSize = s.size * 5;
-      sporesCtx.drawImage(sporeSprite, s.x - drawSize * 0.5, s.y - drawSize * 0.5, drawSize, drawSize);
-    }
-    sporesCtx.globalAlpha = 1.0;
-  }
 
-  // --- Cached Canvas Bounds to Prevent Forced Synchronous Layout ---
-  let cachedCanvasRect = glCanvas.getBoundingClientRect();
-  function updateCanvasBounds() {
-    cachedCanvasRect = glCanvas.getBoundingClientRect();
+      sporesCtx.beginPath();
+      sporesCtx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+      sporesCtx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+      sporesCtx.shadowColor = 'rgba(255, 255, 255, 0.85)';
+      sporesCtx.shadowBlur = 6;
+      sporesCtx.fill();
+    }
   }
-  window.addEventListener('scroll', updateCanvasBounds, { passive: true });
 
   // --- Window Resize Handling ---
   function resize() {
     width = window.innerWidth;
     height = window.innerHeight;
-    const isMobile = width < 768 || ('ontouchstart' in window && width < 1024);
-    dpr = isMobile ? Math.min(window.devicePixelRatio || 1, 1.25) : Math.min(window.devicePixelRatio || 1, 1.75);
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     glCanvas.width = width * dpr;
     glCanvas.height = height * dpr;
@@ -448,15 +434,14 @@
     trailCanvas.height = Math.max(240, Math.floor(height * maskScale));
 
     gl.viewport(0, 0, glCanvas.width, glCanvas.height);
-    updateCanvasBounds();
     initSpores();
   }
 
-  window.addEventListener('resize', resize, { passive: true });
+  window.addEventListener('resize', resize);
 
   // --- Interactive Event Listeners ---
   function onPointerMove(clientX, clientY) {
-    const rect = cachedCanvasRect;
+    const rect = glCanvas.getBoundingClientRect();
     if (clientY > rect.bottom || clientY < rect.top || clientX < rect.left || clientX > rect.right) {
       mouse.isHovering = false;
       return;
@@ -602,46 +587,8 @@
     trailCtx.restore();
   }
 
-  // --- Viewport & Tab Visibility Controller (Zero CPU Work Offscreen) ---
-  const heroContainer = document.getElementById('hero-container');
-  let isHeroVisible = true;
-  let isTabVisible = !document.hidden;
-  let isRendering = false;
-  let trailCanvasDirty = true;
-  let trailHadSegments = false;
-
-  const heroVisibilityObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      isHeroVisible = entry.isIntersecting;
-      if (isHeroVisible && isTabVisible && !isRendering) {
-        isRendering = true;
-        lastTime = performance.now();
-        requestAnimationFrame(render);
-      }
-    });
-  }, { threshold: 0.02 });
-
-  if (heroContainer) {
-    heroVisibilityObserver.observe(heroContainer);
-  }
-
-  document.addEventListener('visibilitychange', () => {
-    isTabVisible = !document.hidden;
-    if (isTabVisible && isHeroVisible && !isRendering) {
-      isRendering = true;
-      lastTime = performance.now();
-      requestAnimationFrame(render);
-    }
-  });
-
   // --- Main Animation & Render Loop ---
   function render(now) {
-    if (!isHeroVisible || !isTabVisible) {
-      isRendering = false;
-      return;
-    }
-    isRendering = true;
-
     const dt = Math.min((now - lastTime) / 1000.0, 0.1);
     lastTime = now;
     totalTime += dt;
@@ -649,26 +596,15 @@
     // 1. Physics
     updateTrail(dt);
 
-    // Track whether trail mask canvas changed to prevent redundant texture uploads
-    if (trailSegments.length > 0) {
-      trailCanvasDirty = true;
-      trailHadSegments = true;
-    } else if (trailHadSegments) {
-      trailCanvasDirty = true;
-      trailHadSegments = false;
-    } else {
-      trailCanvasDirty = false;
-    }
+    // 2. Render Mask
+    renderTrailMask();
 
-    // 2. Render Mask & Upload Mask Texture (Only when dirty)
-    if (trailCanvasDirty) {
-      renderTrailMask();
-      gl.bindTexture(gl.TEXTURE_2D, maskTexture);
-      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, trailCanvas);
-    }
+    // 3. Upload Mask Texture
+    gl.bindTexture(gl.TEXTURE_2D, maskTexture);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, trailCanvas);
 
-    // 3. Bind Shader & Textures
+    // 4. Bind Shader & Textures
     gl.useProgram(program);
 
     gl.activeTexture(gl.TEXTURE0);
@@ -695,10 +631,10 @@
     gl.uniform1f(uniformLocations.riftGlowIntensity, CONFIG.riftGlowIntensity);
     gl.uniform1f(uniformLocations.chromaStrength, CONFIG.chromaticAberration);
 
-    // 4. Draw Hero Quad
+    // 5. Draw
     gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-    // 5. Draw Spores
+    // 6. Draw Spores
     updateAndDrawSpores(totalTime);
 
     requestAnimationFrame(render);
@@ -718,7 +654,7 @@
       letter: 'A', row: 1, bulb_x: 4.5, bulb_y: 9.5, paper_x: 4.8, paper_y: 13.5, color: 'red', colorHex: '#ff3b30', rgb: '255, 59, 48', angle: -2,
       project: {
         title: 'SmartCafe360', tag: 'EXPEDITION #01', category: 'Software Engineering',
-        img: 'assets/Projects/cafe.webp',
+        img: 'assets/Projects/cafe.jpg',
         desc: 'It is a Cafe Management system.',
         tech: ['Python', 'MySQL'],
         demoUrl: 'https://github.com/mokshits2008/SmartCafe360', codeUrl: 'https://github.com/mokshits2008/SmartCafe360'
@@ -773,7 +709,13 @@
 
     if (!lettersLayer || !wallLightsOn) return;
 
-    const parchmentSrc = 'assets/parchment_clean.webp';
+    // Use base64 images if available in window.ASSETS for instant zero-latency loading
+    if (window.ASSETS) {
+      if (window.ASSETS.lights_off && wallLightsOff) wallLightsOff.src = window.ASSETS.lights_off;
+      if (window.ASSETS.lights_on && wallLightsOn) wallLightsOn.src = window.ASSETS.lights_on;
+    }
+
+    const parchmentSrc = (window.ASSETS && window.ASSETS.parchment_clean) ? window.ASSETS.parchment_clean : 'assets/parchment_clean.png';
 
     // Fast lookup map
     const slotMap = {};
@@ -849,7 +791,7 @@
                   title: item.title || '',
                   tag: item.tag || `EXPEDITION #${slot.letter}`,
                   desc: item.desc || '',
-                  img: item.img || 'assets/Projects/cafe.webp',
+                  img: item.img || 'assets/Projects/cafe.jpg',
                   url: item.url || item.demoUrl || item.githubUrl || '#',
                   tech: item.tech || []
                 };
@@ -1053,11 +995,8 @@
     // Screenshot TV Bezel Frame Overlay
     var bezelImg = document.createElement('img');
     bezelImg.className = 'cctv-tv-bezel-img';
-    bezelImg.src = 'assets/cctv_tv_frame.webp';
+    bezelImg.src = 'assets/cctv_tv_frame.png';
     bezelImg.alt = 'Hawkins CCTV Television Bezel';
-    bezelImg.width = 978;
-    bezelImg.height = 920;
-    bezelImg.loading = 'lazy';
     bezelImg.setAttribute('aria-hidden', 'true');
     card.appendChild(bezelImg);
 
@@ -1129,21 +1068,6 @@
     .catch(function () {
       populateGrid([]);
     });
-
-  // Viewport Observer for Achievements Section (Pauses CCTV Static Noise Offscreen)
-  var achSection = document.getElementById('achievements-section');
-  if (achSection && 'IntersectionObserver' in window) {
-    var achObserver = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          achSection.classList.add('is-in-view');
-        } else {
-          achSection.classList.remove('is-in-view');
-        }
-      });
-    }, { threshold: 0.05 });
-    achObserver.observe(achSection);
-  }
 
   // --- Contact Modal / Transmit Frequency Controller ---
   var contactModalEl = document.getElementById('contact-modal');
@@ -1287,13 +1211,31 @@
     { id: 'achievements-section', link: document.getElementById('nav-item-achievements') }
   ];
 
-  var activeNavId = 'hero-container';
+  function updateActiveNav() {
+    var scrollPos = window.scrollY + 180;
+    var currentId = 'hero-container';
 
-  function applyActiveNavLink(targetId) {
-    activeNavId = targetId;
+    if (siteHeaderEl) {
+      if (window.scrollY > 40) {
+        siteHeaderEl.classList.add('is-scrolled');
+      } else {
+        siteHeaderEl.classList.remove('is-scrolled');
+      }
+    }
+
+    for (var i = 0; i < navSectionTargets.length; i++) {
+      var sec = document.getElementById(navSectionTargets[i].id);
+      if (sec) {
+        var top = sec.offsetTop;
+        if (scrollPos >= top) {
+          currentId = navSectionTargets[i].id;
+        }
+      }
+    }
+
     navSectionTargets.forEach(function (item) {
       if (item.link) {
-        if (item.id === targetId) {
+        if (item.id === currentId) {
           item.link.classList.add('is-active');
         } else {
           item.link.classList.remove('is-active');
@@ -1302,39 +1244,8 @@
     });
   }
 
-  // Use IntersectionObserver instead of querying offsetTop on every scroll tick
-  if ('IntersectionObserver' in window) {
-    var navObserver = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          applyActiveNavLink(entry.target.id);
-        }
-      });
-    }, { rootMargin: '-20% 0px -55% 0px' });
-
-    navSectionTargets.forEach(function (item) {
-      var sec = document.getElementById(item.id);
-      if (sec) navObserver.observe(sec);
-    });
-  }
-
-  // Throttled header scroll style check with requestAnimationFrame (Zero forced reflow)
-  var headerTicking = false;
-  window.addEventListener('scroll', function () {
-    if (!headerTicking) {
-      requestAnimationFrame(function () {
-        if (siteHeaderEl) {
-          if (window.scrollY > 40) {
-            siteHeaderEl.classList.add('is-scrolled');
-          } else {
-            siteHeaderEl.classList.remove('is-scrolled');
-          }
-        }
-        headerTicking = false;
-      });
-      headerTicking = true;
-    }
-  }, { passive: true });
+  window.addEventListener('scroll', updateActiveNav, { passive: true });
+  updateActiveNav();
 
   navLinks.forEach(function (link) {
     link.addEventListener('click', function (e) {
