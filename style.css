@@ -181,7 +181,7 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-image: url('assets/stranger_forest_bg.jpg');
+  background-image: url('assets/stranger_forest_bg.webp');
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
@@ -298,22 +298,21 @@ body {
   height: 6px;
   background: #ff3344;
   border-radius: 50%;
-  box-shadow: 0 0 8px #ff3344, 0 0 14px #ff1122;
+  box-shadow: 0 0 10px #ff3344, 0 0 18px #ff1122;
   animation: pulse-glow 2s infinite ease-in-out;
+  will-change: transform, opacity;
 }
 
 @keyframes pulse-glow {
-
   0%,
   100% {
     transform: scale(0.9);
-    opacity: 0.6;
+    opacity: 0.65;
   }
 
   50% {
-    transform: scale(1.4);
+    transform: scale(1.35);
     opacity: 1;
-    box-shadow: 0 0 12px #ff3344, 0 0 22px #ff2233;
   }
 }
 
@@ -1063,8 +1062,7 @@ body {
   padding: 5rem 1.5rem 6rem 1.5rem;
   background-color: #120e0b;
   background-image:
-    radial-gradient(circle at 50% 30%, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.8) 100%),
-    url('assets/byers_wall_bg.jpg');
+    radial-gradient(circle at 50% 30%, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.8) 100%);
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;
@@ -1386,8 +1384,7 @@ body {
   height: 122px;
   background-color: #d1ba95;
   background-image:
-    radial-gradient(circle at center, rgba(240, 222, 190, 0.92) 0%, rgba(185, 155, 115, 0.95) 100%),
-    url('assets/torn_parchment.jpg');
+    radial-gradient(circle at center, rgba(240, 222, 190, 0.92) 0%, rgba(185, 155, 115, 0.95) 100%);
   background-size: cover;
   background-position: center;
   border-radius: 2px;
@@ -2851,40 +2848,55 @@ body {
   border-radius: inherit;
 }
 
-/* Static Noise when Image Loading / Fallback */
+/* Static Noise when Image Loading / Fallback (GPU Composited) */
 .cctv-unit-static {
   position: absolute;
   inset: 0;
   z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.cctv-unit-static::before {
+  content: '';
+  position: absolute;
+  inset: -20px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.88' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='64' height='64' filter='url(%23s)' fill='%236894b0'/%3E%3C/svg%3E");
   background-size: 64px 64px;
   opacity: 0.35;
-  animation: cctvStaticFlicker 0.09s steps(1) infinite;
+  will-change: transform, opacity;
+  animation: cctvStaticFlicker 0.1s steps(1) infinite;
+}
+
+/* Pause CCTV noise animation when Achievements section is offscreen */
+.achievements-section:not(.is-in-view) .cctv-unit-static::before {
+  animation-play-state: paused;
 }
 
 @keyframes cctvStaticFlicker {
   0% {
-    background-position: 0 0;
+    transform: translate3d(0, 0, 0);
     opacity: 0.32;
   }
 
   25% {
-    background-position: 18px 24px;
+    transform: translate3d(6px, 8px, 0);
     opacity: 0.40;
   }
 
   50% {
-    background-position: 32px 8px;
+    transform: translate3d(-6px, 4px, 0);
     opacity: 0.28;
   }
 
   75% {
-    background-position: 12px 42px;
+    transform: translate3d(4px, -6px, 0);
     opacity: 0.38;
   }
 
   100% {
-    background-position: 28px 18px;
+    transform: translate3d(-4px, -4px, 0);
     opacity: 0.34;
   }
 }
@@ -3273,5 +3285,49 @@ body {
 
   .heading-img-achievements {
     max-width: min(94vw, 520px);
+  }
+}
+
+/* ==========================================================================
+   PERFORMANCE & CORE WEB VITALS OPTIMIZATIONS
+   ========================================================================== */
+
+/* Prevent Cumulative Layout Shift (CLS) with Explicit Aspect Ratios */
+.nav-img-home { aspect-ratio: 681 / 228; }
+.nav-img-about { aspect-ratio: 846 / 231; }
+.nav-img-projects { aspect-ratio: 860 / 206; }
+.nav-img-achievements { aspect-ratio: 959 / 190; }
+.heading-img-projects { aspect-ratio: 864 / 210; }
+.heading-img-achievements { aspect-ratio: 963 / 194; }
+.wall-stage-img { aspect-ratio: 1024 / 564; }
+.footer-title-img { aspect-ratio: 868 / 221; }
+.poster-photo { aspect-ratio: 764 / 1024; }
+
+/* Pause modal status animations when modal is closed */
+.contact-modal:not(.is-open) .status-pulse-dot {
+  animation: none !important;
+}
+
+/* GPU promotion for continuously visible animated prompts */
+.scroll-down-btn .scroll-arrow {
+  will-change: transform;
+}
+
+/* Accessibility: Respect prefers-reduced-motion without breaking design */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .cctv-unit-static::before {
+    animation: none !important;
+  }
+  .scroll-down-btn .scroll-arrow {
+    animation: none !important;
+  }
+  .hint-pulse {
+    animation: none !important;
   }
 }
