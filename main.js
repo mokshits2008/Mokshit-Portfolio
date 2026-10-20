@@ -48,15 +48,45 @@
   const trailCanvas = document.createElement('canvas');
   const trailCtx = trailCanvas.getContext('2d');
 
-  // --- Particle Spores Background ---
+  // --- Particle Spores Background & Pre-rendered Sprite ---
   const sporesCtx = sporesCanvas.getContext('2d');
   let spores = [];
-  const SPORE_COUNT = 144;
+  const SPORE_COUNT = window.innerWidth < 768 ? 35 : 70;
+
+  // Pre-rendered glowing spore sprite (eliminates expensive canvas shadowBlur in loop)
+  const sporeSprite = document.createElement('canvas');
+  const sporeSpriteSize = 32;
+  sporeSprite.width = sporeSpriteSize;
+  sporeSprite.height = sporeSpriteSize;
+  const sCtx = sporeSprite.getContext('2d');
+  const halfSpore = sporeSpriteSize / 2;
+  const sporeGrad = sCtx.createRadialGradient(halfSpore, halfSpore, 0, halfSpore, halfSpore, halfSpore);
+  sporeGrad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+  sporeGrad.addColorStop(0.25, 'rgba(255, 255, 255, 0.85)');
+  sporeGrad.addColorStop(0.55, 'rgba(255, 255, 255, 0.25)');
+  sporeGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  sCtx.fillStyle = sporeGrad;
+  sCtx.beginPath();
+  sCtx.arc(halfSpore, halfSpore, halfSpore, 0, Math.PI * 2);
+  sCtx.fill();
+
+  // --- Device & Performance Profiling ---
+  const isMobile = window.innerWidth < 768 || /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
+  const fbmOctaves = isMobile ? 2 : 3;
 
   // --- State Variables ---
   let width = window.innerWidth;
   let height = window.innerHeight;
-  let dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const maxInitialDpr = window.innerWidth < 768 ? 1.0 : 1.5;
+  let dpr = Math.min(window.devicePixelRatio || 1, maxInitialDpr);
+
+  // Mask upload caching flags to skip idle gl.texImage2D calls
+  let pointerMoved = true;
+  let hadSegments = true;
+
+  // Hero visibility tracking for IntersectionObserver
+  let isHeroVisible = true;
+  let heroAnimationId = null;
 
   let mouse = {
     x: width / 2,
@@ -96,7 +126,7 @@
   `;
 
   const fragmentShaderSource = `
-    precision highp float;
+    precision mediump float;
 
     varying vec2 v_uv;
 
@@ -148,12 +178,12 @@
       return 130.0 * dot(m, g);
     }
 
-    // Fractal Brownian Motion for rich organic boiling texture
+    // Fractal Brownian Motion for rich organic boiling texture (2 octaves on mobile, 3 on desktop)
     float fbm(vec2 p) {
       float total = 0.0;
       float amp = 0.55;
       float freq = 1.0;
-      for (int i = 0; i < 3; i++) {
+      for (int i = 0; i < ${fbmOctaves}; i++) {
         total += snoise(p * freq) * amp;
         freq *= 2.15;
         amp *= 0.48;
@@ -377,7 +407,8 @@
   // --- Atmospheric Spores Setup (Stranger Things White Particles) ---
   function initSpores() {
     spores = [];
-    for (let i = 0; i < SPORE_COUNT; i++) {
+    const count = window.innerWidth < 768 ? 35 : 70;
+    for (let i = 0; i < count; i++) {
       spores.push({
         x: Math.random() * width,
         y: Math.random() * height,
@@ -405,21 +436,26 @@
       if (s.y > height) s.y = 0;
 
       const alpha = s.opacity * (0.7 + 0.3 * Math.sin(time * s.flickerSpeed + s.flickerOffset));
+      const renderSize = s.size * 3.5;
 
-      sporesCtx.beginPath();
-      sporesCtx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-      sporesCtx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-      sporesCtx.shadowColor = 'rgba(255, 255, 255, 0.85)';
-      sporesCtx.shadowBlur = 6;
-      sporesCtx.fill();
+      sporesCtx.globalAlpha = Math.max(0, Math.min(1, alpha));
+      sporesCtx.drawImage(
+        sporeSprite,
+        s.x - renderSize / 2,
+        s.y - renderSize / 2,
+        renderSize,
+        renderSize
+      );
     }
+    sporesCtx.globalAlpha = 1.0;
   }
 
   // --- Window Resize Handling ---
   function resize() {
     width = window.innerWidth;
     height = window.innerHeight;
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const maxDpr = window.innerWidth < 768 ? 1.0 : 1.5;
+    dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
 
     glCanvas.width = width * dpr;
     glCanvas.height = height * dpr;
@@ -429,18 +465,22 @@
     sporesCanvas.width = width;
     sporesCanvas.height = height;
 
-    const maskScale = 0.5;
-    trailCanvas.width = Math.max(320, Math.floor(width * maskScale));
-    trailCanvas.height = Math.max(240, Math.floor(height * maskScale));
+    // Downscale trailCanvas to 0.25x on mobile, 0.5x on desktop
+    const maskScale = window.innerWidth < 768 ? 0.25 : 0.5;
+    trailCanvas.width = Math.max(160, Math.floor(width * maskScale));
+    trailCanvas.height = Math.max(120, Math.floor(height * maskScale));
 
     gl.viewport(0, 0, glCanvas.width, glCanvas.height);
     initSpores();
+    pointerMoved = true;
+    hadSegments = true;
   }
 
   window.addEventListener('resize', resize);
 
   // --- Interactive Event Listeners ---
   function onPointerMove(clientX, clientY) {
+    pointerMoved = true;
     const rect = glCanvas.getBoundingClientRect();
     if (clientY > rect.bottom || clientY < rect.top || clientX < rect.left || clientX > rect.right) {
       mouse.isHovering = false;
@@ -589,6 +629,12 @@
 
   // --- Main Animation & Render Loop ---
   function render(now) {
+    // 0. Pause Hero WebGL loop immediately if scrolled out of view
+    if (!isHeroVisible) {
+      heroAnimationId = null;
+      return;
+    }
+
     const dt = Math.min((now - lastTime) / 1000.0, 0.1);
     lastTime = now;
     totalTime += dt;
@@ -596,13 +642,18 @@
     // 1. Physics
     updateTrail(dt);
 
-    // 2. Render Mask
-    renderTrailMask();
+    // 2 & 3. Render Mask and upload ONLY when trail is active, decaying, or pointer moved
+    const hasSegments = trailSegments.length > 0;
+    const needsMaskUpload = hasSegments || hadSegments || pointerMoved;
 
-    // 3. Upload Mask Texture
-    gl.bindTexture(gl.TEXTURE_2D, maskTexture);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, trailCanvas);
+    if (needsMaskUpload) {
+      renderTrailMask();
+      gl.bindTexture(gl.TEXTURE_2D, maskTexture);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, trailCanvas);
+      pointerMoved = false;
+    }
+    hadSegments = hasSegments;
 
     // 4. Bind Shader & Textures
     gl.useProgram(program);
@@ -634,10 +685,13 @@
     // 5. Draw
     gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-    // 6. Draw Spores
-    updateAndDrawSpores(totalTime);
+    heroAnimationId = requestAnimationFrame(render);
+  }
 
-    requestAnimationFrame(render);
+  // Dedicated lightweight loop for ambient spores across all sections
+  function renderSporesLoop(now) {
+    updateAndDrawSpores(now * 0.001);
+    requestAnimationFrame(renderSporesLoop);
   }
 
   // =========================================================================
@@ -810,31 +864,80 @@
     renderSlots();
     loadProjectsData();
 
+    // Throttled Byers Wall Mask Updating (at most once per animation frame)
+    const byersStage = document.getElementById('byers-stage');
+    let byersMaskRafId = null;
+    let pendingMaskUpdate = null;
+
+    function queueMaskUpdate(updateFn) {
+      pendingMaskUpdate = updateFn;
+      if (!byersMaskRafId) {
+        byersMaskRafId = requestAnimationFrame(() => {
+          byersMaskRafId = null;
+          if (pendingMaskUpdate) {
+            pendingMaskUpdate();
+            pendingMaskUpdate = null;
+          }
+        });
+      }
+    }
+
+    function applyLightMask(xPct, yPct) {
+      const maskGradient = `radial-gradient(circle 180px at ${xPct}% ${yPct}%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.95) 28%, rgba(0,0,0,0.65) 58%, rgba(0,0,0,0.18) 82%, rgba(0,0,0,0) 100%)`;
+      wallLightsOn.style.webkitMaskImage = maskGradient;
+      wallLightsOn.style.maskImage = maskGradient;
+      wallLightsOn.style.opacity = '1';
+    }
+
     // Unmask a single bulb with ultra-realistic multi-layered light blooming
     function unmaskSingleLight(slot) {
       if (!wallLightsOn) return;
 
-      const maskGradient = `radial-gradient(circle 180px at ${slot.bulb_x}% ${slot.bulb_y}%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.95) 28%, rgba(0,0,0,0.65) 58%, rgba(0,0,0,0.18) 82%, rgba(0,0,0,0) 100%)`;
-      wallLightsOn.style.webkitMaskImage = maskGradient;
-      wallLightsOn.style.maskImage = maskGradient;
-      wallLightsOn.style.opacity = '1';
+      queueMaskUpdate(() => {
+        applyLightMask(slot.bulb_x, slot.bulb_y);
 
-      if (glowBloomContainer) {
-        glowBloomContainer.innerHTML = `
-          <div class="realistic-light-glow" style="left: ${slot.bulb_x}%; top: ${slot.bulb_y}%; --glow-col: ${slot.colorHex}; --glow-rgb: ${slot.rgb};">
-            <div class="glow-ambient-spill"></div>
-            <div class="glow-corona"></div>
-            <div class="glow-hot-core"></div>
-            <div class="glow-lens-streak"></div>
-          </div>
-        `;
-      }
+        if (glowBloomContainer) {
+          glowBloomContainer.innerHTML = `
+            <div class="realistic-light-glow" style="left: ${slot.bulb_x}%; top: ${slot.bulb_y}%; --glow-col: ${slot.colorHex}; --glow-rgb: ${slot.rgb};">
+              <div class="glow-ambient-spill"></div>
+              <div class="glow-corona"></div>
+              <div class="glow-hot-core"></div>
+              <div class="glow-lens-streak"></div>
+            </div>
+          `;
+        }
+      });
     }
 
     function clearLightUnmask() {
+      if (byersMaskRafId) {
+        cancelAnimationFrame(byersMaskRafId);
+        byersMaskRafId = null;
+      }
+      pendingMaskUpdate = null;
       if (!wallLightsOn) return;
       wallLightsOn.style.opacity = '0';
       if (glowBloomContainer) glowBloomContainer.innerHTML = '';
+    }
+
+    // Interactive pointer unmasking over Byers stage throttled via requestAnimationFrame
+    if (byersStage) {
+      const onStagePointerMove = (e) => {
+        const rect = byersStage.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) return;
+        const px = (((clientX - rect.left) / rect.width) * 100).toFixed(1);
+        const py = (((clientY - rect.top) / rect.height) * 100).toFixed(1);
+
+        queueMaskUpdate(() => {
+          applyLightMask(px, py);
+        });
+      };
+
+      byersStage.addEventListener('mousemove', onStagePointerMove, { passive: true });
+      byersStage.addEventListener('touchmove', onStagePointerMove, { passive: true });
+      byersStage.addEventListener('mouseleave', clearLightUnmask);
     }
   }
 
@@ -899,7 +1002,32 @@
   resize();
   loadImages();
   initByersWallUnmasking();
-  requestAnimationFrame(render);
+
+  // Pause the Hero WebGL loop when scrolled out of view
+  const heroContainer = document.querySelector('.hero-container');
+  if (heroContainer && 'IntersectionObserver' in window) {
+    const heroObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const wasVisible = isHeroVisible;
+        isHeroVisible = entry.isIntersecting;
+        if (isHeroVisible && !wasVisible) {
+          lastTime = performance.now();
+          if (!heroAnimationId) {
+            heroAnimationId = requestAnimationFrame(render);
+          }
+        } else if (!isHeroVisible && heroAnimationId) {
+          cancelAnimationFrame(heroAnimationId);
+          heroAnimationId = null;
+        }
+      });
+    }, { threshold: 0.02 });
+    heroObserver.observe(heroContainer);
+  } else {
+    heroAnimationId = requestAnimationFrame(render);
+  }
+
+  // Start dedicated spore particle loop
+  requestAnimationFrame(renderSporesLoop);
 
 })();
 

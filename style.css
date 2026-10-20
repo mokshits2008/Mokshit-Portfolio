@@ -207,8 +207,8 @@ body {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   display: block;
   pointer-events: none;
   z-index: 60;
@@ -221,8 +221,9 @@ body {
 
 .hero-container {
   position: relative;
-  width: 100vw;
+  width: 100%;
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   display: flex;
   justify-content: center;
@@ -3237,8 +3238,98 @@ body {
 }
 
 @media (max-width: 768px) {
+  /* 1. Reset height & min-height on mobile so sections hug actual content */
+  .about-section,
+  .byers-section,
+  .byers-transmission-section,
+  .byers-wall-section,
+  .projects-section,
+  .achievements-section {
+    height: auto !important;
+    min-height: unset !important;
+    padding: 40px 16px !important;
+  }
+
+  /* 2. Tighten section header spacing on mobile */
+  .section-title-header {
+    margin: 0 auto 1.5rem auto !important;
+  }
+
+  /* 3. Aspect-ratio containers sizing naturally by width */
+  .byers-section-container {
+    width: 100% !important;
+  }
+
+  .byers-stage-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    border-radius: 8px;
+    border-width: 2px;
+  }
+
+  .byers-stage {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 16 / 9 !important;
+  }
+
+  .cctv-wall-rack {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    padding: 8px !important;
+    border-radius: 6px;
+  }
+
+  .monitor-grid {
+    width: 100% !important;
+    height: auto !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-rows: auto !important;
+    gap: 6px !important;
+  }
+
+  /* 4. About Section Manual Dossier mobile padding & stacking */
+  .manual-parchment-sheet {
+    padding: 1.5rem 1rem !important;
+  }
+
+  .manual-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.8rem;
+  }
+
+  .dossier-grid {
+    flex-direction: column !important;
+    gap: 1.8rem !important;
+  }
+
+  .dossier-left-col,
+  .dossier-right-col {
+    flex: 1 1 100% !important;
+    max-width: 100% !important;
+  }
+
+  .sticked-poster-wrapper {
+    max-width: 280px;
+    margin: 0 auto;
+  }
+
+  .stat-block-container {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.6rem 0.3rem !important;
+  }
+
+  .stat-item:nth-child(3) {
+    border-right: none !important;
+  }
+
   .site-footer {
-    padding: 3.5rem 0 0 0;
+    padding: 3rem 0 0 0;
   }
 
   .footer-buttons-row {
@@ -3261,10 +3352,6 @@ body {
   .footer-divider-line {
     width: calc(100% - 2rem);
     margin: 0 auto 1.2rem auto;
-  }
-
-  .section-title-header {
-    margin: 0 auto 3.5rem auto;
   }
 
   .heading-img-projects {
