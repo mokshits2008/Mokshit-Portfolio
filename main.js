@@ -398,10 +398,24 @@
     if (aboutPosterImg && window.ASSETS && window.ASSETS.about) {
       aboutPosterImg.src = window.ASSETS.about;
     }
+
+    // Static Base Image for Mobile Hero View
+    const mobileHeroImg = document.getElementById('mobile-hero-base');
+    if (mobileHeroImg) {
+      if (window.ASSETS && window.ASSETS.hawkins) {
+        mobileHeroImg.src = window.ASSETS.hawkins;
+      } else {
+        mobileHeroImg.src = CONFIG.baseImagePath;
+      }
+    }
   }
 
   function checkReady() {
     resize();
+    if (window.innerWidth >= 768 && !heroAnimationId) {
+      lastTime = performance.now();
+      heroAnimationId = requestAnimationFrame(render);
+    }
   }
 
   // --- Atmospheric Spores Setup (Stranger Things White Particles) ---
@@ -480,6 +494,8 @@
 
   // --- Interactive Event Listeners ---
   function onPointerMove(clientX, clientY) {
+    if (window.innerWidth < 768) return; // Keep hero static on mobile view
+
     pointerMoved = true;
     const rect = glCanvas.getBoundingClientRect();
     if (clientY > rect.bottom || clientY < rect.top || clientX < rect.left || clientX > rect.right) {
@@ -504,6 +520,7 @@
   });
 
   window.addEventListener('touchstart', (e) => {
+    if (window.innerWidth < 768) return; // Mobile view displays static base image without veil tearing
     if (e.touches.length > 0) {
       const t = e.touches[0];
       mouse.x = t.clientX;
@@ -513,6 +530,7 @@
   }, { passive: true });
 
   window.addEventListener('touchmove', (e) => {
+    if (window.innerWidth < 768) return; // Mobile view displays static base image without veil tearing
     if (e.touches.length > 0) {
       onPointerMove(e.touches[0].clientX, e.touches[0].clientY);
     }
@@ -629,8 +647,8 @@
 
   // --- Main Animation & Render Loop ---
   function render(now) {
-    // 0. Pause Hero WebGL loop immediately if scrolled out of view
-    if (!isHeroVisible) {
+    // 0. Pause Hero WebGL loop immediately if scrolled out of view or on mobile view
+    if (!isHeroVisible || window.innerWidth < 768) {
       heroAnimationId = null;
       return;
     }
@@ -810,7 +828,7 @@
         slotEl.innerHTML = innerHTML;
         lettersLayer.appendChild(slotEl);
 
-        // Event Listeners for Realistic Hover Unmasking
+        // Event Listeners for Realistic Hover & Touch Light Reveal (Blinks once then glows)
         slotEl.addEventListener('mouseenter', () => {
           unmaskSingleLight(slot);
         });
@@ -818,6 +836,10 @@
         slotEl.addEventListener('mouseleave', () => {
           clearLightUnmask();
         });
+
+        slotEl.addEventListener('touchstart', () => {
+          unmaskSingleLight(slot);
+        }, { passive: true });
 
         slotEl.addEventListener('click', () => {
           if (slot.project) {
@@ -864,80 +886,31 @@
     renderSlots();
     loadProjectsData();
 
-    // Throttled Byers Wall Mask Updating (at most once per animation frame)
-    const byersStage = document.getElementById('byers-stage');
-    let byersMaskRafId = null;
-    let pendingMaskUpdate = null;
-
-    function queueMaskUpdate(updateFn) {
-      pendingMaskUpdate = updateFn;
-      if (!byersMaskRafId) {
-        byersMaskRafId = requestAnimationFrame(() => {
-          byersMaskRafId = null;
-          if (pendingMaskUpdate) {
-            pendingMaskUpdate();
-            pendingMaskUpdate = null;
-          }
-        });
-      }
-    }
-
-    function applyLightMask(xPct, yPct) {
-      const maskGradient = `radial-gradient(circle 180px at ${xPct}% ${yPct}%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.95) 28%, rgba(0,0,0,0.65) 58%, rgba(0,0,0,0.18) 82%, rgba(0,0,0,0) 100%)`;
-      wallLightsOn.style.webkitMaskImage = maskGradient;
-      wallLightsOn.style.maskImage = maskGradient;
-      wallLightsOn.style.opacity = '1';
-    }
-
     // Unmask a single bulb with ultra-realistic multi-layered light blooming
     function unmaskSingleLight(slot) {
       if (!wallLightsOn) return;
 
-      queueMaskUpdate(() => {
-        applyLightMask(slot.bulb_x, slot.bulb_y);
+      const maskGradient = `radial-gradient(circle 180px at ${slot.bulb_x}% ${slot.bulb_y}%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.95) 28%, rgba(0,0,0,0.65) 58%, rgba(0,0,0,0.18) 82%, rgba(0,0,0,0) 100%)`;
+      wallLightsOn.style.webkitMaskImage = maskGradient;
+      wallLightsOn.style.maskImage = maskGradient;
+      wallLightsOn.style.opacity = '1';
 
-        if (glowBloomContainer) {
-          glowBloomContainer.innerHTML = `
-            <div class="realistic-light-glow" style="left: ${slot.bulb_x}%; top: ${slot.bulb_y}%; --glow-col: ${slot.colorHex}; --glow-rgb: ${slot.rgb};">
-              <div class="glow-ambient-spill"></div>
-              <div class="glow-corona"></div>
-              <div class="glow-hot-core"></div>
-              <div class="glow-lens-streak"></div>
-            </div>
-          `;
-        }
-      });
+      if (glowBloomContainer) {
+        glowBloomContainer.innerHTML = `
+          <div class="realistic-light-glow" style="left: ${slot.bulb_x}%; top: ${slot.bulb_y}%; --glow-col: ${slot.colorHex}; --glow-rgb: ${slot.rgb};">
+            <div class="glow-ambient-spill"></div>
+            <div class="glow-corona"></div>
+            <div class="glow-hot-core"></div>
+            <div class="glow-lens-streak"></div>
+          </div>
+        `;
+      }
     }
 
     function clearLightUnmask() {
-      if (byersMaskRafId) {
-        cancelAnimationFrame(byersMaskRafId);
-        byersMaskRafId = null;
-      }
-      pendingMaskUpdate = null;
       if (!wallLightsOn) return;
       wallLightsOn.style.opacity = '0';
       if (glowBloomContainer) glowBloomContainer.innerHTML = '';
-    }
-
-    // Interactive pointer unmasking over Byers stage throttled via requestAnimationFrame
-    if (byersStage) {
-      const onStagePointerMove = (e) => {
-        const rect = byersStage.getBoundingClientRect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) return;
-        const px = (((clientX - rect.left) / rect.width) * 100).toFixed(1);
-        const py = (((clientY - rect.top) / rect.height) * 100).toFixed(1);
-
-        queueMaskUpdate(() => {
-          applyLightMask(px, py);
-        });
-      };
-
-      byersStage.addEventListener('mousemove', onStagePointerMove, { passive: true });
-      byersStage.addEventListener('touchmove', onStagePointerMove, { passive: true });
-      byersStage.addEventListener('mouseleave', clearLightUnmask);
     }
   }
 
@@ -1003,27 +976,32 @@
   loadImages();
   initByersWallUnmasking();
 
-  // Pause the Hero WebGL loop when scrolled out of view
+  // Immediately render hero WebGL loop on desktop viewport
+  if (window.innerWidth >= 768) {
+    lastTime = performance.now();
+    heroAnimationId = requestAnimationFrame(render);
+  }
+
+  // Pause the Hero WebGL loop when scrolled out of view or on mobile
   const heroContainer = document.querySelector('.hero-container');
   if (heroContainer && 'IntersectionObserver' in window) {
     const heroObserver = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        const wasVisible = isHeroVisible;
         isHeroVisible = entry.isIntersecting;
-        if (isHeroVisible && !wasVisible) {
-          lastTime = performance.now();
+        if (isHeroVisible && window.innerWidth >= 768) {
           if (!heroAnimationId) {
+            lastTime = performance.now();
             heroAnimationId = requestAnimationFrame(render);
           }
-        } else if (!isHeroVisible && heroAnimationId) {
-          cancelAnimationFrame(heroAnimationId);
-          heroAnimationId = null;
+        } else {
+          if (heroAnimationId) {
+            cancelAnimationFrame(heroAnimationId);
+            heroAnimationId = null;
+          }
         }
       });
     }, { threshold: 0.02 });
     heroObserver.observe(heroContainer);
-  } else {
-    heroAnimationId = requestAnimationFrame(render);
   }
 
   // Start dedicated spore particle loop
@@ -1286,46 +1264,46 @@
         },
         body: JSON.stringify(payload)
       })
-      .then(function (res) {
-        if (res.ok) {
-          return res.json();
-        }
-        throw new Error('Signal dispatch response error');
-      })
-      .then(function () {
-        if (statusPulseDot) statusPulseDot.className = 'status-pulse-dot success';
-        if (transmissionStatusText) {
-          transmissionStatusText.textContent = '✔ TRANSMISSION RECEIVED! DISPATCH SENT TO ' + targetEmail;
-        }
-        if (transmissionSubmitBtn) {
-          transmissionSubmitBtn.innerHTML = '<span class="btn-bracket">[</span><span class="btn-text">DISPATCH DELIVERED ✔</span><span class="btn-bracket">]</span>';
-        }
-        transmissionForm.reset();
-        setTimeout(function () {
-          closeContactModal();
+        .then(function (res) {
+          if (res.ok) {
+            return res.json();
+          }
+          throw new Error('Signal dispatch response error');
+        })
+        .then(function () {
+          if (statusPulseDot) statusPulseDot.className = 'status-pulse-dot success';
+          if (transmissionStatusText) {
+            transmissionStatusText.textContent = '✔ TRANSMISSION RECEIVED! DISPATCH SENT TO ' + targetEmail;
+          }
+          if (transmissionSubmitBtn) {
+            transmissionSubmitBtn.innerHTML = '<span class="btn-bracket">[</span><span class="btn-text">DISPATCH DELIVERED ✔</span><span class="btn-bracket">]</span>';
+          }
+          transmissionForm.reset();
+          setTimeout(function () {
+            closeContactModal();
+            if (transmissionSubmitBtn) {
+              transmissionSubmitBtn.disabled = false;
+              transmissionSubmitBtn.innerHTML = '<span class="btn-bracket">[</span><span class="btn-text">TRANSMIT DISPATCH 📡</span><span class="btn-bracket">]</span>';
+            }
+            if (statusPulseDot) statusPulseDot.className = 'status-pulse-dot';
+            if (transmissionStatusText) {
+              transmissionStatusText.textContent = 'SIGNAL READY // FREQUENCY 14.28 MHz CLEAR';
+            }
+          }, 3000);
+        })
+        .catch(function () {
+          if (statusPulseDot) statusPulseDot.className = 'status-pulse-dot success';
+          if (transmissionStatusText) {
+            transmissionStatusText.textContent = '✔ SIGNAL PACKET READY // LAUNCHING DIRECT RADIO FREQUENCY...';
+          }
           if (transmissionSubmitBtn) {
             transmissionSubmitBtn.disabled = false;
             transmissionSubmitBtn.innerHTML = '<span class="btn-bracket">[</span><span class="btn-text">TRANSMIT DISPATCH 📡</span><span class="btn-bracket">]</span>';
           }
-          if (statusPulseDot) statusPulseDot.className = 'status-pulse-dot';
-          if (transmissionStatusText) {
-            transmissionStatusText.textContent = 'SIGNAL READY // FREQUENCY 14.28 MHz CLEAR';
-          }
-        }, 3000);
-      })
-      .catch(function () {
-        if (statusPulseDot) statusPulseDot.className = 'status-pulse-dot success';
-        if (transmissionStatusText) {
-          transmissionStatusText.textContent = '✔ SIGNAL PACKET READY // LAUNCHING DIRECT RADIO FREQUENCY...';
-        }
-        if (transmissionSubmitBtn) {
-          transmissionSubmitBtn.disabled = false;
-          transmissionSubmitBtn.innerHTML = '<span class="btn-bracket">[</span><span class="btn-text">TRANSMIT DISPATCH 📡</span><span class="btn-bracket">]</span>';
-        }
-        var mailtoSubject = encodeURIComponent('[Hawkins Transmission] Dispatch from ' + name);
-        var mailtoBody = encodeURIComponent('Operative Name: ' + name + '\nReturn Frequency / Email: ' + email + '\n\nDispatch Payload:\n' + message);
-        window.location.href = 'mailto:' + targetEmail + '?subject=' + mailtoSubject + '&body=' + mailtoBody;
-      });
+          var mailtoSubject = encodeURIComponent('[Hawkins Transmission] Dispatch from ' + name);
+          var mailtoBody = encodeURIComponent('Operative Name: ' + name + '\nReturn Frequency / Email: ' + email + '\n\nDispatch Payload:\n' + message);
+          window.location.href = 'mailto:' + targetEmail + '?subject=' + mailtoSubject + '&body=' + mailtoBody;
+        });
     });
   }
 
@@ -1419,7 +1397,7 @@
         textArea.select();
         try {
           document.execCommand('copy');
-        } catch (err) {}
+        } catch (err) { }
         document.body.removeChild(textArea);
       }
 
