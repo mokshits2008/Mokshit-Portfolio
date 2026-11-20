@@ -10,7 +10,8 @@
       "Python",
       "MySQL"
     ]
-  },{
+  },
+  {
     "letter": "B",
     "tag": "EXPEDITION #02",
     "title": "Domino Sky",
@@ -18,6 +19,6 @@
     "img": "assets/Projects/domino.png",
     "url": "https://github.com/mokshits2008/Domino-Sky",
     "tech": [
-      "TypeScript"
-      }
+      "TypeScript"]
+}
 ]
