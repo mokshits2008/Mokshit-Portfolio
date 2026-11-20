@@ -14,7 +14,7 @@
     "tag": "EXPEDITION #02",
     "title": "Domino Sky",
     "desc": "Domino Sky is an aviation operations analysis platform and disruption cascade simulation engine for a single-day Indian domestic network.",
-    "img": "assets/Projects/domino.jpg",
+    "img": "assets/Projects/domino.png",
     "url": "https://github.com/mokshits2008/Domino-Sky",
     "tech": [
       "TypeScript"
