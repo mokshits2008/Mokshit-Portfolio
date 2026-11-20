@@ -10,7 +10,8 @@
       "Python",
       "MySQL"
     ]
-  },"letter": "B",
+  },{
+    "letter": "B",
     "tag": "EXPEDITION #02",
     "title": "Domino Sky",
     "desc": "Domino Sky is an aviation operations analysis platform and disruption cascade simulation engine for a single-day Indian domestic network.",
@@ -18,4 +19,5 @@
     "url": "https://github.com/mokshits2008/Domino-Sky",
     "tech": [
       "TypeScript"
+      }
 ]
